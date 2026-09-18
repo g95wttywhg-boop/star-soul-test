@@ -250,6 +250,17 @@ function archetypeAnalysis(rank){
     "<p>"+matchSeparation(rank)+" 因此结果更适合读成 <b>"+a[0]+" × "+b[0]+" × "+c[0]+"</b> 的象征性组合，而不是“属于某一个星族”。</p>"+
     "<p class=\"muted\">这里的百分比是本测试内部的结构相似度：综合绝对分数接近度、十项特征形状，以及该原型关键高低特征计算；不是概率，也不是DNA比例。</p>";
 }
+function contrastTopTwo(s,rank){
+  const a=rank[0], b=rank[1], pa=A[a[0]], pb=A[b[0]];
+  const diffs=pa.map((v,i)=>[i,Math.abs(v-pb[i]),v,pb[i]])
+    .sort((x,y)=>y[1]-x[1]).slice(0,3);
+  const rows=diffs.map(x=>{
+    const i=x[0], da=Math.abs(s[i]-x[2]), db=Math.abs(s[i]-x[3]);
+    const lean=da<db?a[0]:db<da?b[0]:"两者之间";
+    return "<li><b>"+dims[i]+"</b>：你是 "+s[i]+"%，"+a[0]+" 模板为 "+x[2]+"%，"+b[0]+" 模板为 "+x[3]+"%，这一项更靠近 <b>"+lean+"</b>。</li>";
+  }).join("");
+  return "<h3>第一名 vs 第二名：为什么会这样？</h3><p>最能区分 <b>"+a[0]+"</b> 和 <b>"+b[0]+"</b> 的三个特征如下：</p><ul>"+rows+"</ul><p>所以第一名并不是由某一个单独分数决定，而是十项特征整体形状加上这些关键差异共同决定。</p>";
+}
 function suggestions(s){
   const sorted=byScore(s.map((v,i)=>[dims[i],v]));
   const hi=sorted[0][0], low=sorted[sorted.length-1][0], tips=[];
@@ -284,6 +295,7 @@ function render(s){
     '<div class="analysisBlock">'+comboAnalysis(s)+'</div>'+
     '<div class="analysisBlock">'+tensionAnalysis(s)+'</div>'+
     '<div class="analysisBlock">'+archetypeAnalysis(rank)+'</div>'+
+    '<div class="analysisBlock">'+contrastTopTwo(s,rank)+'</div>'+
     '<div class="analysisBlock">'+suggestions(s)+'</div>'+
     '<p class="muted">以上内容是基于本测试内部评分规则生成的象征性人格解读，不是对真实外星DNA、血统、疾病或心理状态的判断。</p>';
   share="我的22星族×三魂七魄象征原型测试\n"+dims.map((d,i)=>d+" "+s[i]+"%").join("｜")+"\nTop 5："+rank.slice(0,5).map((r,i)=>(i+1)+"."+r[0]+" "+r[1]+"%").join("；")+"\n最突出特征："+sorted.slice(0,3).map(x=>x[0]).join("、")+"\n（仅作象征性人格/神话兴趣，不是外星DNA或医学检测）";
