@@ -56,3 +56,14 @@
 .premiseLabel{display:inline-block;margin-bottom:8px;padding:5px 9px;border-radius:999px;background:rgba(184,157,91,.18);font-size:13px;font-weight:800;letter-spacing:.03em}
 .premiseBox p{margin:7px 0;line-height:1.7}
 @media(max-width:620px){.premiseBox{padding:14px 13px;margin-top:14px}.premiseBox p{font-size:14px}}
+
+.allArchetypes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+.allArchetypeRow{padding:12px;border:1px solid rgba(70,88,140,.38);border-radius:12px;background:rgba(8,13,26,.24)}
+.allArchetypeName,.allArchetypeMeta{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.allArchetypeName{justify-content:flex-start}
+.allRank{display:inline-flex;align-items:center;justify-content:center;min-width:25px;height:25px;border-radius:999px;background:rgba(80,101,170,.18);font-size:12px;font-weight:800}
+.allArchetypeMeta{margin:6px 0 7px;color:var(--muted);font-size:12px}
+.allArchetypeMeta strong{color:inherit;font-size:14px}
+.allArchetypeBar{height:6px;border-radius:999px;background:rgba(83,99,150,.18);overflow:hidden}
+.allArchetypeBar i{display:block;height:100%;border-radius:999px;background:currentColor;opacity:.75}
+@media(max-width:700px){.allArchetypes{grid-template-columns:1fr}}
