@@ -410,7 +410,7 @@ function render(s){
   radarEl.innerHTML=radar(s);
   dimBars.innerHTML='<h3>十项特征得分</h3>'+dims.map((d,i)=>'<div class="dim"><div class="dimhead"><span>'+d+' · '+meaning[d]+'</span><b>'+s[i]+'% · '+band(s[i])+'</b></div><div class="bar"><i style="width:'+s[i]+'%"></i></div></div>').join("");
   ranking.innerHTML=rank.slice(0,5).map((r,i)=>'<div class="rankitem"><div class="ranktop"><span class="rankname">'+(i+1)+'. '+r[0]+'</span><span class="score">'+r[1]+'%</span></div><div class="muted"><b>与你吻合：</b>'+r[2].aligned.join("、")+'<br>'+blurbs[r[0]]+'</div></div>').join("");
-  kpis.innerHTML='<div class="kpi"><span>最突出特征</span><b>'+sorted[0][0]+'</b><span>'+sorted[0][1]+'% · '+band(sorted[0][1])+'</span></div><div class="kpi"><span>首要原型</span><b>'+rank[0][0]+'</b><span>结构相似度 '+rank[0][1]+'%</span></div><div class="kpi"><span>相对较弱特征</span><b>'+low[0]+'</b><span>'+low[1]+'% · '+band(low[1])+'</span></div>';
+  allRanking.innerHTML=rank.map((r,i)=>'<div class="allArchetypeRow"><div class="allArchetypeName"><span class="allRank">'+(i+1)+'</span><b>'+r[0]+'</b></div><div class="allArchetypeMeta"><span>结构相似度</span><strong>'+r[1]+'%</strong></div><div class="allArchetypeBar"><i style="width:'+r[1]+'%"></i></div></div>').join("");
   interpret.innerHTML=
     '<div class="analysisBlock">'+overall(s,cons)+'</div>'+
     '<div class="analysisBlock">'+soulAnalysis(s)+'</div>'+
@@ -419,7 +419,6 @@ function render(s){
     '<div class="analysisBlock">'+tensionAnalysis(s)+'</div>'+
     '<div class="analysisBlock">'+archetypeAnalysis(rank)+'</div>'+
     '<div class="analysisBlock">'+contrastTopTwo(s,rank)+'</div>'+
-    '<div class="analysisBlock">'+fullArchetypeRanking(rank)+'</div>'+
     '<div class="analysisBlock">'+weakArchetypeAnalysis(rank)+'</div>'+
     '<div class="analysisBlock">'+suggestions(s)+'</div>'+
     '<p class="muted">以上内容是基于本测试内部评分规则生成的象征性人格解读，不是对真实外星DNA、血统、疾病或心理状态的判断。</p>';
@@ -427,6 +426,7 @@ function render(s){
   quizCard.hidden=true;result.hidden=false;scrollTo({top:0,behavior:"smooth"});
 }
 const radarEl=document.getElementById("radar");
+const allRanking=document.getElementById("allRanking");
 submitBtn.onclick=()=>{
   const s=scores();
   if(!s){
