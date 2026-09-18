@@ -1,10 +1,65 @@
 "use strict";
-const STORAGE="starSoulV2";
-const qs=[
-"我经常思考“我为什么来到这里”以及人生真正的意义。","遇到复杂问题，我本能地想分析结构、规律和解决方案。","我的感情、欲望和身体感受对我的决定影响很大。","进入陌生环境时，我会很快注意到潜在危险或不安全因素。","当自己的边界被侵犯时，我会产生很强的反击欲望。","我很重视亲密、吸引力、爱情以及人与人之间深层的连接。","我对“什么属于我、什么不应该进入我的生活”有很强的界线意识。","我常能迅速感觉出某个人、某种信息或某个环境哪里不对。","我的人生经常经历“结束旧阶段—彻底改变—重新开始”的循环。","我对声音、气氛、空间、天气或周围人的状态非常敏感。","相比个人得失，我有时更关心一个事件背后的整体意义。","我喜欢系统、知识、科技、战略、分类或寻找隐藏规律。","我很依赖直觉、感受和内在冲动来理解自己真正想要什么。","即使别人没察觉到问题，我也很容易提前进入警戒状态。","面临冲突时，我通常更倾向于行动，而不是长期退让。","美感、爱情、亲密关系或创造生命/作品会给我很强的满足感。","我不容易让别人进入自己的核心世界，需要较长时间建立信任。","我非常看重真假、善恶、健康与有害之间的辨别。","对已经失去意义的人、关系或生活模式，我最终会选择清理掉。","我有时不需要明确理由，就能通过身体感觉判断环境是否适合自己。","我偶尔会有一种“自己属于更大整体”的感觉。","在压力下，我往往会变得更加理性、计划化和策略化。","我需要真实体验生活，而不仅仅是理解人生理论。","安全感一旦被破坏，我会很难完全放松。","我拥有明显的竞争心、保护欲或捍卫立场的力量。","我很容易通过关系、情感和亲密体验获得创造灵感。","对操控、侵入、强迫或别人替我决定，我尤其敏感。","我宁愿面对不舒服的真相，也不太愿意相信漂亮但虚假的解释。","我具有较强的“断舍离”倾向，某个阶段结束后可以完全成为另一个自己。","我的身体似乎经常比理智更早知道喜欢/不喜欢、安全/危险。"];
+const STORAGE="starSoulV3";
+const items=[
+{d:0,t:"做重要决定时，我会先判断它是否符合自己长期相信的价值与方向。"},
+{d:1,t:"面对复杂问题时，我会自然地把它拆成几个部分，再逐步处理。"},
+{d:2,t:"我通常能分辨自己此刻真正的情绪、欲望或身体需要。"},
+{d:3,t:"进入陌生环境时，我会自然留意周围的人、出口、气氛或潜在风险。"},
+{d:4,t:"当别人明显越过我的界限时，我通常会采取行动维护自己。"},
+{d:5,t:"深度的情感连接会明显提升我的活力、灵感或投入感。"},
+{d:6,t:"我不会轻易让外界的信息、要求或情绪进入自己的核心生活。"},
+{d:7,t:"面对一个说法时，我会留意其中是否存在矛盾、夸大或操控。"},
+{d:8,t:"当一个阶段已经失去意义时，我通常能够逐步结束并重新整理生活。"},
+{d:9,t:"环境中的光线、声音、气味、拥挤程度等变化，会明显影响我的状态。"},
+
+{d:0,t:"即使某个选择短期更有利，只要明显违背我的核心原则，我也会犹豫或放弃。"},
+{d:1,t:"遇到多个方案时，我会主动比较证据、后果和可行性，而不是只凭感觉选一个。"},
+{d:2,t:"在做决定时，我会认真考虑自己真实的感受，而不只是考虑别人期待什么。"},
+{d:3,t:"当一个原本安全的人或环境出现细微变化时，我通常能较早察觉。"},
+{d:4,t:"遇到冲突时，如果事情对我很重要，我能够明确表达立场而不是一直退让。"},
+{d:5,t:"我很重视关系中的互相理解、回应和情感交流。"},
+{d:6,t:"建立信任对我来说通常是一个逐步开放的过程，而不是一下子完全交付。"},
+{d:7,t:"我愿意因为新的可靠证据而修正原来的判断，即使这会让我不舒服。"},
+{d:8,t:"经历明显变化后，我通常会主动调整习惯、关系或环境，而不是完全照旧。"},
+{d:9,t:"有时我的身体会先出现紧绷、放松、兴奋或抗拒，之后理智才明白原因。"},
+
+{d:0,t:"当个人得失与更大的责任或整体影响冲突时，我会认真考虑后者。"},
+{d:1,t:"我喜欢从重复出现的事件里寻找规律，并用规律帮助自己预测下一步。"},
+{d:2,t:"如果长期压抑自己的感受或需要，我通常会明显感觉到状态变差。"},
+{d:3,t:"在答应一件重要事情之前，我会本能地评估它是否可能带来风险或失控。"},
+{d:4,t:"当需要保护自己、他人或重要原则时，我能迅速调动行动力。"},
+{d:5,t:"美感、亲密感或彼此吸引，常常会激发我的创造欲和表达欲。"},
+{d:6,t:"面对别人的强烈情绪或要求时，我能区分哪些需要回应，哪些不必承担。"},
+{d:7,t:"在相信重要信息之前，我通常会同时考虑来源、动机和可能后果。"},
+{d:8,t:"我能够承认某些关系、目标或身份已经不再适合自己，并允许它们结束。"},
+{d:9,t:"睡眠、节奏、噪音、人群密度或空间舒适度，会明显改变我的精神状态。"},
+
+{d:0,t:"即使生活很忙，我仍会需要一种“我为什么做这些事”的意义感。"},
+{d:1,t:"在压力下，列计划、整理优先级或建立结构通常能让我恢复稳定。"},
+{d:2,t:"我能感觉到自己对人、事、环境的吸引与排斥，而不是总要靠分析才知道。"},
+{d:3,t:"一旦安全感被破坏，我通常需要一段时间才能重新完全放松。"},
+{d:4,t:"当局面需要快速决断时，我往往比长期观望更容易进入行动状态。"},
+{d:5,t:"只要关系是相互尊重的，我愿意投入时间与情感去建立真正的亲密。"},
+{d:6,t:"我能够明确说“不”，尤其当某个要求让我觉得被侵入或被强迫时。"},
+{d:7,t:"我能区分“我不喜欢”与“它真的有害”这两件不同的事。"},
+{d:8,t:"结束旧阶段后，我通常会从中提取经验，并尝试建立新的生活方式。"},
+{d:9,t:"我通常能觉察身体是更紧张还是更放松，并把这种信号纳入判断。"},
+
+{d:0,r:true,t:"只要眼前有效果，我通常不太在意这件事是否符合长期意义或价值。"},
+{d:1,r:true,t:"遇到复杂问题时，我通常不愿分析细节，更倾向只凭第一反应处理。"},
+{d:2,r:true,t:"身体和情绪告诉我什么，对我的决定通常没有太大影响。"},
+{d:3,r:true,t:"在不确定的环境中，我很少留意潜在风险或安全变化。"},
+{d:4,r:true,t:"即使自己的界限被明显踩到，我通常也不会采取行动去维护。"},
+{d:5,r:true,t:"我更习惯长期保持距离，亲密连接通常不会给我太多动力。"},
+{d:6,r:true,t:"别人的情绪、意见或要求很容易进入我的生活，即使我并不确定是否合适。"},
+{d:7,r:true,t:"只要一个说法符合我原先的想法，我通常不会再进一步核实。"},
+{d:8,r:true,t:"即使某种生活模式已经明显无效，我也常常因为习惯而长期维持。"},
+{d:9,r:true,t:"我通常很难察觉环境或身体状态的细微变化。"}
+];
+const qs=items.map(x=>x.t);
 const dims=["胎光","爽灵","幽精","尸狗","伏矢","雀阴","吞贼","非毒","除秽","臭肺"];
 const meaning={胎光:"意义、本源与整体视角",爽灵:"认知、策略与分析",幽精:"情感、欲望与身体体验",尸狗:"警觉、安全与危险侦测",伏矢:"行动、防御与边界",雀阴:"亲密、连接与创造",吞贼:"过滤、保护与内外边界",非毒:"辨别、判断与心理免疫",除秽:"清理、结束与更新",臭肺:"感官、环境与身体直觉"};
-const idx=[0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9];
+const idx=items.map(x=>x.d);
 const A={
 "Ciakar 天龙族":[35,78,72,86,95,52,70,55,45,40],"Lyran 天琴族":[80,78,62,55,72,76,48,55,50,58],"Orion 猎户族":[45,95,42,60,78,35,70,82,50,42],"Cygnus 天鹅座":[78,52,82,52,36,74,42,48,55,92],"Arcturian 大角星":[98,62,38,35,30,38,56,88,90,62],"Pleiadian 昴宿星":[90,50,88,42,30,94,45,58,55,84],"Zeta / Grey 灰人":[36,98,28,78,38,20,90,75,42,48],"Sirian 天狼星":[78,76,55,64,50,48,82,70,58,80],"Aldebaran 毕宿五":[48,82,78,55,88,82,65,52,48,45],"Andromedan 仙女座":[96,56,60,35,28,50,45,72,90,82],"Mizarian 开阳":[42,92,40,50,38,35,88,92,55,46],"Mintakan 参宿三星":[86,44,92,52,28,84,40,48,62,94],"Cassiopian 仙后座":[55,80,62,82,50,42,68,86,58,64],"Canes Venatici 猎犬座":[75,70,48,88,82,42,62,70,55,55],"Pictorian 绘架座":[48,42,98,84,66,72,52,46,48,90],"Antarian 心宿二":[82,74,55,52,92,55,52,68,88,58],"Sagittarian 猫科型":[72,55,88,82,92,78,52,48,50,76],"Anunnaki / Nibiruan":[50,90,84,62,86,78,88,58,55,52],"Tau Cetian 鲸鱼座τ":[86,84,48,45,42,40,72,94,86,58],"Capellian 五车二":[42,82,76,80,84,48,90,60,52,50],"Procyon 南河三":[84,88,48,50,46,42,94,96,70,58],"Hyades 毕星团":[76,55,82,78,52,88,55,52,60,70]};
 const blurbs={
@@ -12,11 +67,11 @@ const blurbs={
 const box=document.getElementById("questions"), labels=["完全不像","较不像","一半一半","比较像","非常像"];
 qs.forEach((q,i)=>{const d=document.createElement("div");d.className="q";d.innerHTML='<div class="qtitle"><b>'+(i+1)+'.</b> '+q+'</div><div class="scale">'+[1,2,3,4,5].map(v=>'<label class="choice"><input type="radio" name="q'+i+'" value="'+v+'"><span>'+v+'<br><small>'+labels[v-1]+'</small></span></label>').join("")+'</div>';box.appendChild(d)});
 const answers=()=>qs.map((_,i)=>{const x=document.querySelector('input[name="q'+i+'"]:checked');return x?+x.value:null});
-function progress(){const n=answers().filter(v=>v!==null).length;progressBar.style.width=(n/30*100)+"%";progressText.textContent="已完成 "+n+" / 30"}
+function progress(){const n=answers().filter(v=>v!==null).length;progressBar.style.width=(n/qs.length*100)+"%";progressText.textContent="已完成 "+n+" / "+qs.length}
 function save(){try{localStorage.setItem(STORAGE,JSON.stringify(answers()))}catch(e){}}
 function load(){try{const a=JSON.parse(localStorage.getItem(STORAGE)||"null");if(Array.isArray(a))a.forEach((v,i)=>{if(v){const x=document.querySelector('input[name="q'+i+'"][value="'+v+'"]');if(x)x.checked=true}})}catch(e){}}
 document.addEventListener("change",e=>{if(e.target.matches('input[type="radio"]')){progress();save()}});
-function scores(){const a=answers();if(a.some(v=>v===null))return null;const s=Array(10).fill(0),c=Array(10).fill(0);a.forEach((v,i)=>{s[idx[i]]+=v;c[idx[i]]++});return s.map((v,i)=>Math.round((v/c[i]-1)/4*100))}
+;return s.map((v,i)=>Math.round((v/c[i]-1)/4*100))}
 function sim(a,b){let d=0,x=0,y=0;for(let i=0;i<a.length;i++){d+=a[i]*b[i];x+=a[i]*a[i];y+=b[i]*b[i]}return Math.round(d/(Math.sqrt(x)*Math.sqrt(y))*100)}
 function radar(s){const c=170,r=120,N=10,p=(i,R)=>{const a=-Math.PI/2+i*2*Math.PI/N;return[c+Math.cos(a)*R,c+Math.sin(a)*R]};let g="";[.25,.5,.75,1].forEach(f=>g+='<polygon class="grid" points="'+Array.from({length:N},(_,i)=>p(i,r*f).join(",")).join(" ")+'"/>');let ax="",lb="";for(let i=0;i<N;i++){const q=p(i,r),t=p(i,r+28);ax+='<line class="axis" x1="'+c+'" y1="'+c+'" x2="'+q[0]+'" y2="'+q[1]+'"/>';lb+='<text x="'+t[0]+'" y="'+t[1]+'" text-anchor="middle" dominant-baseline="middle">'+dims[i]+'</text>'}const pts=s.map((v,i)=>p(i,r*v/100));return '<svg class="radar" width="340" height="340" viewBox="0 0 340 340">'+g+ax+'<polygon class="shape" points="'+pts.map(v=>v.join(",")).join(" ")+'"/>'+pts.map(v=>'<circle class="dot" cx="'+v[0]+'" cy="'+v[1]+'" r="3"/>').join("")+lb+'</svg>'}
 let share="";
@@ -118,6 +173,6 @@ const radarEl=document.getElementById("radar");
 submitBtn.onclick=()=>{const s=scores();if(!s){error.style.display="block";error.scrollIntoView({behavior:"smooth",block:"center"});return}error.style.display="none";render(s)};
 function clearAll(){document.querySelectorAll('input[type="radio"]').forEach(x=>x.checked=false);try{localStorage.removeItem(STORAGE)}catch(e){}progress();error.style.display="none";result.hidden=true;quizCard.hidden=false}
 resetBtn.onclick=clearAll;restartBtn.onclick=()=>{clearAll();quizCard.scrollIntoView({behavior:"smooth"})};backBtn.onclick=()=>{result.hidden=true;quizCard.hidden=false;quizCard.scrollIntoView({behavior:"smooth"})};
-demoBtn.onclick=()=>{const d=[4,5,3,4,2,5,3,4,4,5];for(let i=0;i<30;i++){const x=document.querySelector('input[name="q'+i+'"][value="'+d[i%10]+'"]');if(x)x.checked=true}progress();save()};
+demoBtn.onclick=()=>{const d=[4,5,3,4,2,5,3,4,4,5];for(let i=0;i<qs.length;i++){const x=document.querySelector('input[name="q'+i+'"][value="'+d[i%10]+'"]');if(x)x.checked=true}progress();save()};
 copyBtn.onclick=async()=>{let ok=false;try{await navigator.clipboard.writeText(share);ok=true}catch(e){}notice.textContent=ok?"结果已复制。":"浏览器未允许自动复制，请手动复制页面结果。";notice.style.display="block";setTimeout(()=>notice.style.display="none",2200)};
 load();progress();
