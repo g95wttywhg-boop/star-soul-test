@@ -112,12 +112,21 @@ const box=document.getElementById("questions");
 const POSKEY=STORAGE+"_pos";
 let currentQuestion=0;
 
+const optionOrders=[
+  [2,0,4,1,3],
+  [1,4,2,0,3],
+  [3,1,0,4,2],
+  [0,3,1,4,2],
+  [4,2,0,3,1]
+];
+
 items.forEach((it,i)=>{
   const d=document.createElement("div");
   d.className="q";
   d.dataset.index=i;
   d.hidden=true;
-  d.innerHTML='<div class="qtitle">'+it.q+'</div><div class="answerList">'+it.o.map(opt=>'<label class="choice sentenceChoice"><input type="radio" name="q'+i+'" value="'+opt[1]+'"><span>'+opt[0]+'</span></label>').join("")+'</div>';
+  const shown=optionOrders[i%optionOrders.length].map(k=>it.o[k]);
+  d.innerHTML='<div class="qtitle">'+it.q+'</div><div class="answerList">'+shown.map(opt=>'<label class="choice sentenceChoice"><input type="radio" name="q'+i+'" value="'+opt[1]+'"><span>'+opt[0]+'</span></label>').join("")+'</div>';
   box.appendChild(d);
 });
 
