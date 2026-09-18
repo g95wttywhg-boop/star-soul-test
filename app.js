@@ -82,6 +82,22 @@ function scores(){
   });
   return s.map((v,i)=>Math.round((v/count[i]-1)/4*100));
 }
+function responseConsistency(){
+  const a=answers();
+  if(a.some(v=>v===null)) return null;
+  const diffs=[];
+  for(let d=0;d<10;d++){
+    const pos=[], rev=[];
+    items.forEach((it,i)=>{
+      if(it.d!==d) return;
+      if(it.r) rev.push(6-a[i]); else pos.push(a[i]);
+    });
+    const p=pos.reduce((x,y)=>x+y,0)/pos.length;
+    const r=rev.reduce((x,y)=>x+y,0)/rev.length;
+    diffs.push(Math.abs(p-r)/4*100);
+  }
+  return Math.max(0,Math.round(100-diffs.reduce((x,y)=>x+y,0)/diffs.length));
+}
 function sim(a,b){let d=0,x=0,y=0;for(let i=0;i<a.length;i++){d+=a[i]*b[i];x+=a[i]*a[i];y+=b[i]*b[i]}return Math.round(d/(Math.sqrt(x)*Math.sqrt(y))*100)}
 function radar(s){const c=170,r=120,N=10,p=(i,R)=>{const a=-Math.PI/2+i*2*Math.PI/N;return[c+Math.cos(a)*R,c+Math.sin(a)*R]};let g="";[.25,.5,.75,1].forEach(f=>g+='<polygon class="grid" points="'+Array.from({length:N},(_,i)=>p(i,r*f).join(",")).join(" ")+'"/>');let ax="",lb="";for(let i=0;i<N;i++){const q=p(i,r),t=p(i,r+28);ax+='<line class="axis" x1="'+c+'" y1="'+c+'" x2="'+q[0]+'" y2="'+q[1]+'"/>';lb+='<text x="'+t[0]+'" y="'+t[1]+'" text-anchor="middle" dominant-baseline="middle">'+dims[i]+'</text>'}const pts=s.map((v,i)=>p(i,r*v/100));return '<svg class="radar" width="340" height="340" viewBox="0 0 340 340">'+g+ax+'<polygon class="shape" points="'+pts.map(v=>v.join(",")).join(" ")+'"/>'+pts.map(v=>'<circle class="dot" cx="'+v[0]+'" cy="'+v[1]+'" r="3"/>').join("")+lb+'</svg>'}
 let share="";
@@ -153,13 +169,14 @@ function suggestions(s){
   if(s[8]>=70) tips.push("更新能力强时，在结束旧阶段前确认：这是成熟的放下，还是为了摆脱暂时的不适。");
   return "<h3>自我观察建议</h3><ul>"+tips.slice(0,5).map(x=>"<li>"+x+"</li>").join("")+"</ul>";
 }
-function overall(s){
+function overall(s,cons){
   const sorted=byScore(s.map((v,i)=>[dims[i],v])), mean=avg(s), spread=sorted[0][1]-sorted[sorted.length-1][1];
   let shape=spread<=20?"整体比较均衡":spread<=40?"有明显主次":"轮廓非常鲜明";
-  return "<h3>总体轮廓</h3><p>你的十项特征平均值约为 <b>"+mean+"%</b>，最高与最低相差 <b>"+spread+"</b> 分，整体属于“<b>"+shape+"</b>”的结构。最突出的三项是 <b>"+sorted.slice(0,3).map(x=>x[0]+" "+x[1]+"%").join("、")+"</b>；相对较弱的两项是 <b>"+sorted.slice(-2).reverse().map(x=>x[0]+" "+x[1]+"%").join("、")+"</b>。</p>";
+  const consText=cons>=80?"正反向题整体较一致":cons>=60?"正反向题存在一定情境差异":"正反向题差异较明显，结果更适合当作探索性参考"; return "<h3>总体轮廓</h3><p>你的十项特征平均值约为 <b>"+mean+"%</b>，最高与最低相差 <b>"+spread+"</b> 分，整体属于“<b>"+shape+"</b>”的结构。最突出的三项是 <b>"+sorted.slice(0,3).map(x=>x[0]+" "+x[1]+"%").join("、")+"</b>；相对较弱的两项是 <b>"+sorted.slice(-2).reverse().map(x=>x[0]+" "+x[1]+"%").join("、")+"</b>。</p><p><b>作答一致性参考："+cons+"%</b>： "+consText+"。这只是本测试内部的正反向题一致性检查，不是经过验证的心理测量信度指标。</p>";
 }
 
 function render(s){
+  const cons=responseConsistency();
   const rank=Object.entries(A).map(([n,v])=>[n,sim(s,v)]).sort((a,b)=>b[1]-a[1]),
         sorted=s.map((v,i)=>[dims[i],v]).sort((a,b)=>b[1]-a[1]),
         low=[...sorted].sort((a,b)=>a[1]-b[1])[0];
@@ -168,7 +185,7 @@ function render(s){
   ranking.innerHTML=rank.slice(0,5).map((r,i)=>'<div class="rankitem"><div class="ranktop"><span class="rankname">'+(i+1)+'. '+r[0]+'</span><span class="score">'+r[1]+'%</span></div><div class="muted">'+blurbs[r[0]]+'</div></div>').join("");
   kpis.innerHTML='<div class="kpi"><span>最突出特征</span><b>'+sorted[0][0]+'</b><span>'+sorted[0][1]+'% · '+band(sorted[0][1])+'</span></div><div class="kpi"><span>首要原型</span><b>'+rank[0][0]+'</b><span>匹配 '+rank[0][1]+'%</span></div><div class="kpi"><span>相对较弱特征</span><b>'+low[0]+'</b><span>'+low[1]+'% · '+band(low[1])+'</span></div>';
   interpret.innerHTML=
-    '<div class="analysisBlock">'+overall(s)+'</div>'+
+    '<div class="analysisBlock">'+overall(s,cons)+'</div>'+
     '<div class="analysisBlock">'+soulAnalysis(s)+'</div>'+
     '<div class="analysisBlock">'+poAnalysis(s)+'</div>'+
     '<div class="analysisBlock">'+comboAnalysis(s)+'</div>'+
