@@ -347,6 +347,19 @@ function archetypeAnalysis(rank){
     "<p>"+matchSeparation(rank)+" 因此结果更适合读成 <b>"+a[0]+" × "+b[0]+" × "+c[0]+"</b> 的象征性组合，而不是“属于某一个星族”。</p>"+
     "<p class=\"muted\">这里的百分比是本测试内部的结构相似度：综合绝对分数接近度、十项特征形状，以及该原型关键高低特征计算；不是概率，也不是DNA比例。</p>";
 }
+function weakArchetypeAnalysis(rank){
+  const weak=rank.slice(-5).reverse();
+  const cards=weak.map(r=>{
+    const diff=r[2].gaps.map(g=>g.name+"（你比该原型"+g.direction+"约"+g.gap+"分）").join("、");
+    return "<div class=\"weakItem\"><div class=\"weakTop\"><b>"+r[0]+"</b><span>结构相似度 "+r[1]+"%</span></div>"+
+      "<p><b>典型特征：</b>"+r[2].core.join("、")+"。</p>"+
+      "<p><b>在你身上较不明显的原因：</b>"+diff+"。</p>"+
+      "<p class=\"muted\">"+blurbs[r[0]]+"</p></div>";
+  }).join("");
+  return "<h3>在你身上显现较弱的其他星族原型</h3>"+
+    "<p>下面这些原型与你目前的十项特征结构差异相对较大，因此在本次测试里显现得不明显。这里的“较弱”只表示结构相似度较低，并不代表你完全没有这些特征。</p>"+
+    "<div class=\"weakList\">"+cards+"</div>";
+}
 function contrastTopTwo(s,rank){
   const a=rank[0], b=rank[1], pa=A[a[0]], pb=A[b[0]];
   const diffs=pa.map((v,i)=>[i,Math.abs(v-pb[i]),v,pb[i]])
@@ -393,6 +406,7 @@ function render(s){
     '<div class="analysisBlock">'+tensionAnalysis(s)+'</div>'+
     '<div class="analysisBlock">'+archetypeAnalysis(rank)+'</div>'+
     '<div class="analysisBlock">'+contrastTopTwo(s,rank)+'</div>'+
+    '<div class="analysisBlock">'+weakArchetypeAnalysis(rank)+'</div>'+
     '<div class="analysisBlock">'+suggestions(s)+'</div>'+
     '<p class="muted">以上内容是基于本测试内部评分规则生成的象征性人格解读，不是对真实外星DNA、血统、疾病或心理状态的判断。</p>';
   share="我的22星族×三魂七魄象征原型测试\n"+dims.map((d,i)=>d+" "+s[i]+"%").join("｜")+"\nTop 5："+rank.slice(0,5).map((r,i)=>(i+1)+"."+r[0]+" "+r[1]+"%").join("；")+"\n最突出特征："+sorted.slice(0,3).map(x=>x[0]).join("、")+"\n（仅作象征性人格/神话兴趣，不是外星DNA或医学检测）";
