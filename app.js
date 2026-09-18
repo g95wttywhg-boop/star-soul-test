@@ -71,7 +71,17 @@ function progress(){const n=answers().filter(v=>v!==null).length;progressBar.sty
 function save(){try{localStorage.setItem(STORAGE,JSON.stringify(answers()))}catch(e){}}
 function load(){try{const a=JSON.parse(localStorage.getItem(STORAGE)||"null");if(Array.isArray(a))a.forEach((v,i)=>{if(v){const x=document.querySelector('input[name="q'+i+'"][value="'+v+'"]');if(x)x.checked=true}})}catch(e){}}
 document.addEventListener("change",e=>{if(e.target.matches('input[type="radio"]')){progress();save()}});
-;return s.map((v,i)=>Math.round((v/c[i]-1)/4*100))}
+function scores(){
+  const a=answers();
+  if(a.some(v=>v===null)) return null;
+  const s=Array(10).fill(0), count=Array(10).fill(0);
+  a.forEach((v,i)=>{
+    const adjusted=items[i].r ? 6-v : v;
+    s[idx[i]]+=adjusted;
+    count[idx[i]]++;
+  });
+  return s.map((v,i)=>Math.round((v/count[i]-1)/4*100));
+}
 function sim(a,b){let d=0,x=0,y=0;for(let i=0;i<a.length;i++){d+=a[i]*b[i];x+=a[i]*a[i];y+=b[i]*b[i]}return Math.round(d/(Math.sqrt(x)*Math.sqrt(y))*100)}
 function radar(s){const c=170,r=120,N=10,p=(i,R)=>{const a=-Math.PI/2+i*2*Math.PI/N;return[c+Math.cos(a)*R,c+Math.sin(a)*R]};let g="";[.25,.5,.75,1].forEach(f=>g+='<polygon class="grid" points="'+Array.from({length:N},(_,i)=>p(i,r*f).join(",")).join(" ")+'"/>');let ax="",lb="";for(let i=0;i<N;i++){const q=p(i,r),t=p(i,r+28);ax+='<line class="axis" x1="'+c+'" y1="'+c+'" x2="'+q[0]+'" y2="'+q[1]+'"/>';lb+='<text x="'+t[0]+'" y="'+t[1]+'" text-anchor="middle" dominant-baseline="middle">'+dims[i]+'</text>'}const pts=s.map((v,i)=>p(i,r*v/100));return '<svg class="radar" width="340" height="340" viewBox="0 0 340 340">'+g+ax+'<polygon class="shape" points="'+pts.map(v=>v.join(",")).join(" ")+'"/>'+pts.map(v=>'<circle class="dot" cx="'+v[0]+'" cy="'+v[1]+'" r="3"/>').join("")+lb+'</svg>'}
 let share="";
