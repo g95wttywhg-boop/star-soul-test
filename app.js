@@ -347,6 +347,19 @@ function archetypeAnalysis(rank){
     "<p>"+matchSeparation(rank)+" 因此结果更适合读成 <b>"+a[0]+" × "+b[0]+" × "+c[0]+"</b> 的象征性组合，而不是“属于某一个星族”。</p>"+
     "<p class=\"muted\">这里的百分比是本测试内部的结构相似度：综合绝对分数接近度、十项特征形状，以及该原型关键高低特征计算；不是概率，也不是DNA比例。</p>";
 }
+function fullArchetypeRanking(rank){
+  const rows=rank.map((r,i)=>{
+    const tier=i<5?"较显著":i>=rank.length-5?"较弱":"中间";
+    return "<div class=\"allArchetypeRow\">"+
+      "<div class=\"allArchetypeName\"><span class=\"allRank\">"+(i+1)+"</span><b>"+r[0]+"</b></div>"+
+      "<div class=\"allArchetypeMeta\"><span>"+tier+"</span><strong>"+r[1]+"%</strong></div>"+
+      "<div class=\"allArchetypeBar\"><i style=\"width:"+r[1]+"%\"></i></div>"+
+    "</div>";
+  }).join("");
+  return "<h3>全部22星族吻合度</h3>"+
+    "<p>下面按照本次测试的结构相似度从高到低列出全部22个星族原型。百分比越高，表示你的十项特征分布与该原型模板越接近；它不是概率，也不是DNA比例。</p>"+
+    "<div class=\"allArchetypes\">"+rows+"</div>";
+}
 function weakArchetypeAnalysis(rank){
   const weak=rank.slice(-5).reverse();
   const cards=weak.map(r=>{
@@ -406,6 +419,7 @@ function render(s){
     '<div class="analysisBlock">'+tensionAnalysis(s)+'</div>'+
     '<div class="analysisBlock">'+archetypeAnalysis(rank)+'</div>'+
     '<div class="analysisBlock">'+contrastTopTwo(s,rank)+'</div>'+
+    '<div class="analysisBlock">'+fullArchetypeRanking(rank)+'</div>'+
     '<div class="analysisBlock">'+weakArchetypeAnalysis(rank)+'</div>'+
     '<div class="analysisBlock">'+suggestions(s)+'</div>'+
     '<p class="muted">以上内容是基于本测试内部评分规则生成的象征性人格解读，不是对真实外星DNA、血统、疾病或心理状态的判断。</p>';
