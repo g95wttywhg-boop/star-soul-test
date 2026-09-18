@@ -98,7 +98,50 @@ function responseConsistency(){
   }
   return Math.max(0,Math.round(100-diffs.reduce((x,y)=>x+y,0)/diffs.length));
 }
-function sim(a,b){let d=0,x=0,y=0;for(let i=0;i<a.length;i++){d+=a[i]*b[i];x+=a[i]*a[i];y+=b[i]*b[i]}return Math.round(d/(Math.sqrt(x)*Math.sqrt(y))*100)}
+function mean(x){return x.reduce((a,b)=>a+b,0)/x.length}
+function pearson(a,b){
+  const ma=mean(a), mb=mean(b);
+  let num=0,da=0,db=0;
+  for(let i=0;i<a.length;i++){
+    const x=a[i]-ma,y=b[i]-mb;
+    num+=x*y; da+=x*x; db+=y*y;
+  }
+  if(!da||!db) return 0;
+  return num/Math.sqrt(da*db);
+}
+function archetypeSignature(v){
+  const pairs=v.map((x,i)=>[i,x]).sort((a,b)=>b[1]-a[1]);
+  return {high:pairs.slice(0,3).map(x=>x[0]),low:pairs.slice(-2).map(x=>x[0])};
+}
+function matchProfile(user,name,profile){
+  let sq=0;
+  for(let i=0;i<user.length;i++) sq+=(user[i]-profile[i])**2;
+  const closeness=Math.max(0,100-Math.sqrt(sq/user.length));
+  const corr=pearson(user,profile);
+  const shape=Math.max(0,Math.min(100,(corr+1)*50));
+  const sig=archetypeSignature(profile);
+  const key=[...sig.high,...sig.low];
+  const signature=Math.max(0,100-key.reduce((sum,i)=>sum+Math.abs(user[i]-profile[i]),0)/key.length);
+  const score=Math.round(closeness*.45+shape*.40+signature*.15);
+
+  const shared=sig.high
+    .filter(i=>user[i]>=60)
+    .sort((a,b)=>Math.abs(user[a]-profile[a])-Math.abs(user[b]-profile[b]));
+  const aligned=(shared.length?shared:sig.high.slice().sort((a,b)=>Math.abs(user[a]-profile[a])-Math.abs(user[b]-profile[b])))
+    .slice(0,3).map(i=>dims[i]);
+
+  const gaps=user.map((x,i)=>[i,Math.abs(x-profile[i]),x-profile[i]])
+    .sort((a,b)=>b[1]-a[1]).slice(0,2)
+    .map(x=>({name:dims[x[0]],gap:Math.round(x[1]),direction:x[2]>0?"高于":"低于"}));
+
+  return [name,score,{closeness:Math.round(closeness),shape:Math.round(shape),signature:Math.round(signature),core:sig.high.map(i=>dims[i]),aligned,gaps}];
+}
+function matchSeparation(rank){
+  const gap12=rank[0][1]-rank[1][1], span=rank[0][1]-rank[Math.min(4,rank.length-1)][1];
+  if(gap12>=8&&span>=15) return "区分度较高：第一原型与后续原型拉开了较明显差距。";
+  if(gap12>=4||span>=9) return "区分度中等：有一个较明显的主原型，但仍保留混合特征。";
+  return "区分度较低：前几个原型非常接近，更适合看成混合型，而不是单一归类。";
+}
 function radar(s){const c=170,r=120,N=10,p=(i,R)=>{const a=-Math.PI/2+i*2*Math.PI/N;return[c+Math.cos(a)*R,c+Math.sin(a)*R]};let g="";[.25,.5,.75,1].forEach(f=>g+='<polygon class="grid" points="'+Array.from({length:N},(_,i)=>p(i,r*f).join(",")).join(" ")+'"/>');let ax="",lb="";for(let i=0;i<N;i++){const q=p(i,r),t=p(i,r+28);ax+='<line class="axis" x1="'+c+'" y1="'+c+'" x2="'+q[0]+'" y2="'+q[1]+'"/>';lb+='<text x="'+t[0]+'" y="'+t[1]+'" text-anchor="middle" dominant-baseline="middle">'+dims[i]+'</text>'}const pts=s.map((v,i)=>p(i,r*v/100));return '<svg class="radar" width="340" height="340" viewBox="0 0 340 340">'+g+ax+'<polygon class="shape" points="'+pts.map(v=>v.join(",")).join(" ")+'"/>'+pts.map(v=>'<circle class="dot" cx="'+v[0]+'" cy="'+v[1]+'" r="3"/>').join("")+lb+'</svg>'}
 let share="";
 
@@ -154,8 +197,14 @@ function tensionAnalysis(s){
   return "<h3>可能的内在拉扯</h3><ul>"+t.slice(0,4).map(x=>"<li>"+x+"</li>").join("")+"</ul>";
 }
 function archetypeAnalysis(rank){
-  const a=rank[0],b=rank[1],c=rank[2];
-  return "<h3>星族原型混合解读</h3><p><b>第一原型："+a[0]+"（"+a[1]+"%）</b>。"+blurbs[a[0]]+"</p><p><b>第二原型："+b[0]+"（"+b[1]+"%）</b>。它更像是你的辅助模式：当第一原型不足以应对环境时，这一套特征可能更容易被调用。"+blurbs[b[0]]+"</p><p><b>第三原型："+c[0]+"（"+c[1]+"%）</b>。它可以理解为较次级但仍明显的色彩。"+blurbs[c[0]]+"</p><p>因此结果不建议理解成“你属于某一个星族”，而更适合看成 <b>"+a[0]+" × "+b[0]+" × "+c[0]+"</b> 的象征性组合。</p>";
+  const a=rank[0],b=rank[1],c=rank[2], ad=a[2],bd=b[2],cd=c[2];
+  const gapText=x=>x.gaps.map(g=>g.name+"（你比原型"+g.direction+"约"+g.gap+"分）").join("、");
+  return "<h3>星族原型混合解读</h3>"+
+    "<p><b>第一原型："+a[0]+"（结构相似度 "+a[1]+"%）</b>。其核心特征是 <b>"+ad.core.join("、")+"</b>；与你最吻合的关键特征是 <b>"+ad.aligned.join("、")+"</b>。"+blurbs[a[0]]+"</p>"+
+    "<p>与你第一原型差异最大的地方是 "+gapText(ad)+"。这意味着它不是“完全等同于你”，而只是目前十项特征结构里最接近的一种象征模板。</p>"+
+    "<p><b>第二原型："+b[0]+"（"+b[1]+"%）</b>，主要吻合 <b>"+bd.aligned.join("、")+"</b>；<b>第三原型："+c[0]+"（"+c[1]+"%）</b>，主要吻合 <b>"+cd.aligned.join("、")+"</b>。</p>"+
+    "<p>"+matchSeparation(rank)+" 因此结果更适合读成 <b>"+a[0]+" × "+b[0]+" × "+c[0]+"</b> 的象征性组合，而不是“属于某一个星族”。</p>"+
+    "<p class=\"muted\">这里的百分比是本测试内部的结构相似度：综合绝对分数接近度、十项特征形状，以及该原型关键高低特征计算；不是概率，也不是DNA比例。</p>";
 }
 function suggestions(s){
   const sorted=byScore(s.map((v,i)=>[dims[i],v]));
@@ -177,13 +226,13 @@ function overall(s,cons){
 
 function render(s){
   const cons=responseConsistency();
-  const rank=Object.entries(A).map(([n,v])=>[n,sim(s,v)]).sort((a,b)=>b[1]-a[1]),
+  const rank=Object.entries(A).map(([n,v])=>matchProfile(s,n,v)).sort((a,b)=>b[1]-a[1]),
         sorted=s.map((v,i)=>[dims[i],v]).sort((a,b)=>b[1]-a[1]),
         low=[...sorted].sort((a,b)=>a[1]-b[1])[0];
   radarEl.innerHTML=radar(s);
   dimBars.innerHTML='<h3>十项特征得分</h3>'+dims.map((d,i)=>'<div class="dim"><div class="dimhead"><span>'+d+' · '+meaning[d]+'</span><b>'+s[i]+'% · '+band(s[i])+'</b></div><div class="bar"><i style="width:'+s[i]+'%"></i></div></div>').join("");
-  ranking.innerHTML=rank.slice(0,5).map((r,i)=>'<div class="rankitem"><div class="ranktop"><span class="rankname">'+(i+1)+'. '+r[0]+'</span><span class="score">'+r[1]+'%</span></div><div class="muted">'+blurbs[r[0]]+'</div></div>').join("");
-  kpis.innerHTML='<div class="kpi"><span>最突出特征</span><b>'+sorted[0][0]+'</b><span>'+sorted[0][1]+'% · '+band(sorted[0][1])+'</span></div><div class="kpi"><span>首要原型</span><b>'+rank[0][0]+'</b><span>匹配 '+rank[0][1]+'%</span></div><div class="kpi"><span>相对较弱特征</span><b>'+low[0]+'</b><span>'+low[1]+'% · '+band(low[1])+'</span></div>';
+  ranking.innerHTML=rank.slice(0,5).map((r,i)=>'<div class="rankitem"><div class="ranktop"><span class="rankname">'+(i+1)+'. '+r[0]+'</span><span class="score">'+r[1]+'%</span></div><div class="muted"><b>核心：</b>'+r[2].core.join("、")+'<br><b>与你吻合：</b>'+r[2].aligned.join("、")+'<br>'+blurbs[r[0]]+'</div></div>').join("");
+  kpis.innerHTML='<div class="kpi"><span>最突出特征</span><b>'+sorted[0][0]+'</b><span>'+sorted[0][1]+'% · '+band(sorted[0][1])+'</span></div><div class="kpi"><span>首要原型</span><b>'+rank[0][0]+'</b><span>结构相似度 '+rank[0][1]+'%</span></div><div class="kpi"><span>相对较弱特征</span><b>'+low[0]+'</b><span>'+low[1]+'% · '+band(low[1])+'</span></div>';
   interpret.innerHTML=
     '<div class="analysisBlock">'+overall(s,cons)+'</div>'+
     '<div class="analysisBlock">'+soulAnalysis(s)+'</div>'+
