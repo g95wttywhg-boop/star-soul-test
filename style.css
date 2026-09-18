@@ -28,3 +28,10 @@
 .modelStep span{display:block;color:var(--muted);font-size:14px;line-height:1.55}
 .modelFormula{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;padding:14px;border-radius:14px;background:rgba(63,82,140,.12);text-align:center}
 @media(max-width:700px){.modelSteps{grid-template-columns:1fr}.modelFormula{align-items:flex-start;flex-direction:column;gap:6px}.modelFormula>span{display:none}}
+
+.heroExplain{margin:18px 0 14px;padding:18px;border:1px solid rgba(86,103,166,.5);border-radius:18px;background:rgba(15,22,43,.62);text-align:left}
+.heroExplain h2{margin:0 0 10px;font-size:clamp(20px,4vw,28px)}
+.heroExplain p{line-height:1.7;margin:10px 0}
+.heroFormula{padding:12px 14px;border-radius:14px;background:rgba(74,92,154,.16)}
+.heroTestIntro{margin-top:14px}
+@media(max-width:620px){.heroExplain{padding:15px 13px;margin-top:14px}.heroExplain h2{font-size:21px}.heroExplain p{font-size:14px}.heroFormula{font-size:13px}}
