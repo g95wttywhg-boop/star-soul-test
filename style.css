@@ -44,3 +44,10 @@
   .answerList{gap:9px}
   .sentenceChoice span{min-height:54px;padding:12px 13px;font-size:14px}
 }
+
+.weakList{display:grid;gap:12px;margin-top:12px}
+.weakItem{padding:14px;border:1px solid rgba(70,88,140,.38);border-radius:14px;background:rgba(8,13,26,.28)}
+.weakTop{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:8px}
+.weakTop span{color:var(--muted);font-size:13px;white-space:nowrap}
+.weakItem p{margin:6px 0;line-height:1.65}
+@media(max-width:620px){.weakTop{flex-direction:column;gap:4px}.weakTop span{white-space:normal}}
