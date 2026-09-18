@@ -109,12 +109,101 @@ const blurbs={
 "Hyades 毕星团":"核心在亲密、归属、情感和群体连接。与昴宿相比，它更重稳定归属与群体关系，而不是理想化共情。"
 };
 const box=document.getElementById("questions"), labels=["不像","较不像","一般","较像","很像"];
-qs.forEach((q,i)=>{const d=document.createElement("div");d.className="q";d.innerHTML='<div class="qtitle"><b>'+(i+1)+'.</b> '+q+'</div><div class="scale">'+[1,2,3,4,5].map(v=>'<label class="choice"><input type="radio" name="q'+i+'" value="'+v+'"><span>'+labels[v-1]+'</span></label>').join("")+'</div>';box.appendChild(d)});
-const answers=()=>qs.map((_,i)=>{const x=document.querySelector('input[name="q'+i+'"]:checked');return x?+x.value:null});
-function progress(){const n=answers().filter(v=>v!==null).length;progressBar.style.width=(n/qs.length*100)+"%";progressText.textContent="已完成 "+n+" / "+qs.length}
-function save(){try{localStorage.setItem(STORAGE,JSON.stringify(answers()))}catch(e){}}
-function load(){try{const a=JSON.parse(localStorage.getItem(STORAGE)||"null");if(Array.isArray(a))a.forEach((v,i)=>{if(v){const x=document.querySelector('input[name="q'+i+'"][value="'+v+'"]');if(x)x.checked=true}})}catch(e){}}
-document.addEventListener("change",e=>{if(e.target.matches('input[type="radio"]')){progress();save()}});
+const POSKEY=STORAGE+"_pos";
+let currentQuestion=0;
+
+qs.forEach((q,i)=>{
+  const d=document.createElement("div");
+  d.className="q";
+  d.dataset.index=i;
+  d.hidden=true;
+  d.innerHTML='<div class="qtitle">'+q+'</div><div class="scale">'+[1,2,3,4,5].map(v=>'<label class="choice"><input type="radio" name="q'+i+'" value="'+v+'"><span>'+labels[v-1]+'</span></label>').join("")+'</div>';
+  box.appendChild(d);
+});
+
+const answers=()=>qs.map((_,i)=>{
+  const x=document.querySelector('input[name="q'+i+'"]:checked');
+  return x?+x.value:null;
+});
+
+function currentAnswered(){
+  return answers()[currentQuestion]!==null;
+}
+
+function progress(){
+  const n=answers().filter(v=>v!==null).length;
+  progressBar.style.width=(n/qs.length*100)+"%";
+  progressText.textContent="已完成 "+n+" / "+qs.length;
+}
+
+function save(){
+  try{
+    localStorage.setItem(STORAGE,JSON.stringify(answers()));
+    localStorage.setItem(POSKEY,String(currentQuestion));
+  }catch(e){}
+}
+
+function load(){
+  try{
+    const a=JSON.parse(localStorage.getItem(STORAGE)||"null");
+    if(Array.isArray(a)){
+      a.forEach((v,i)=>{
+        if(v){
+          const x=document.querySelector('input[name="q'+i+'"][value="'+v+'"]');
+          if(x)x.checked=true;
+        }
+      });
+    }
+    const saved=Number(localStorage.getItem(POSKEY));
+    const firstEmpty=answers().findIndex(v=>v===null);
+    if(Number.isInteger(saved)&&saved>=0&&saved<qs.length) currentQuestion=saved;
+    if(firstEmpty>=0 && answers()[currentQuestion]!==null) currentQuestion=firstEmpty;
+    if(firstEmpty<0) currentQuestion=qs.length-1;
+  }catch(e){
+    currentQuestion=0;
+  }
+}
+
+function renderCurrent(){
+  document.querySelectorAll("#questions .q").forEach((el,i)=>el.hidden=i!==currentQuestion);
+  questionCounter.textContent="第 "+(currentQuestion+1)+" / "+qs.length+" 题";
+  prevBtn.disabled=currentQuestion===0;
+  nextBtn.hidden=currentQuestion===qs.length-1;
+  nextBtn.disabled=!currentAnswered();
+  const allDone=answers().every(v=>v!==null);
+  submitBtn.hidden=!(currentQuestion===qs.length-1&&allDone);
+  error.style.display="none";
+  progress();
+  save();
+}
+
+function goToQuestion(i){
+  currentQuestion=Math.max(0,Math.min(qs.length-1,i));
+  renderCurrent();
+  const stage=document.querySelector(".questionStage");
+  if(stage) stage.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+document.addEventListener("change",e=>{
+  if(!e.target.matches('input[type="radio"]')) return;
+  progress();
+  save();
+  if(currentQuestion<qs.length-1){
+    setTimeout(()=>goToQuestion(currentQuestion+1),160);
+  }else{
+    renderCurrent();
+  }
+});
+
+prevBtn.onclick=()=>goToQuestion(currentQuestion-1);
+nextBtn.onclick=()=>{
+  if(!currentAnswered()){
+    error.textContent="请先选择一个答案。";
+    error.style.display="block";
+    return;
+  }
+  goToQuestion(currentQuestion+1);
+};
 function scores(){
   const a=answers();
   if(a.some(v=>v===null)) return null;
@@ -302,9 +391,36 @@ function render(s){
   quizCard.hidden=true;result.hidden=false;scrollTo({top:0,behavior:"smooth"});
 }
 const radarEl=document.getElementById("radar");
-submitBtn.onclick=()=>{const s=scores();if(!s){error.style.display="block";error.scrollIntoView({behavior:"smooth",block:"center"});return}error.style.display="none";render(s)};
-function clearAll(){document.querySelectorAll('input[type="radio"]').forEach(x=>x.checked=false);try{localStorage.removeItem(STORAGE)}catch(e){}progress();error.style.display="none";result.hidden=true;quizCard.hidden=false}
-resetBtn.onclick=clearAll;restartBtn.onclick=()=>{clearAll();quizCard.scrollIntoView({behavior:"smooth"})};backBtn.onclick=()=>{result.hidden=true;quizCard.hidden=false;quizCard.scrollIntoView({behavior:"smooth"})};
-demoBtn.onclick=()=>{const d=[4,5,3,4,2,5,3,4,4,5];for(let i=0;i<qs.length;i++){const x=document.querySelector('input[name="q'+i+'"][value="'+d[i%10]+'"]');if(x)x.checked=true}progress();save()};
-copyBtn.onclick=async()=>{let ok=false;try{await navigator.clipboard.writeText(share);ok=true}catch(e){}notice.textContent=ok?"结果已复制。":"浏览器未允许自动复制，请手动复制页面结果。";notice.style.display="block";setTimeout(()=>notice.style.display="none",2200)};
-load();progress();
+submitBtn.onclick=()=>{
+  const s=scores();
+  if(!s){
+    error.textContent="还有题目没有完成。";
+    error.style.display="block";
+    return;
+  }
+  error.style.display="none";
+  render(s);
+};
+function clearAll(){
+  document.querySelectorAll('input[type="radio"]').forEach(x=>x.checked=false);
+  currentQuestion=0;
+  try{
+    localStorage.removeItem(STORAGE);
+    localStorage.removeItem(POSKEY);
+  }catch(e){}
+  result.hidden=true;
+  quizCard.hidden=false;
+  renderCurrent();
+}
+resetBtn.onclick=clearAll;
+restartBtn.onclick=()=>{clearAll();quizCard.scrollIntoView({behavior:"smooth"})};
+backBtn.onclick=()=>{result.hidden=true;quizCard.hidden=false;renderCurrent();quizCard.scrollIntoView({behavior:"smooth"})};
+copyBtn.onclick=async()=>{
+  let ok=false;
+  try{await navigator.clipboard.writeText(share);ok=true}catch(e){}
+  notice.textContent=ok?"结果已复制。":"浏览器未允许自动复制，请手动复制页面结果。";
+  notice.style.display="block";
+  setTimeout(()=>notice.style.display="none",2200);
+};
+load();
+renderCurrent();
