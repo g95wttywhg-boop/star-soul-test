@@ -20,7 +20,100 @@ function scores(){const a=answers();if(a.some(v=>v===null))return null;const s=A
 function sim(a,b){let d=0,x=0,y=0;for(let i=0;i<a.length;i++){d+=a[i]*b[i];x+=a[i]*a[i];y+=b[i]*b[i]}return Math.round(d/(Math.sqrt(x)*Math.sqrt(y))*100)}
 function radar(s){const c=170,r=120,N=10,p=(i,R)=>{const a=-Math.PI/2+i*2*Math.PI/N;return[c+Math.cos(a)*R,c+Math.sin(a)*R]};let g="";[.25,.5,.75,1].forEach(f=>g+='<polygon class="grid" points="'+Array.from({length:N},(_,i)=>p(i,r*f).join(",")).join(" ")+'"/>');let ax="",lb="";for(let i=0;i<N;i++){const q=p(i,r),t=p(i,r+28);ax+='<line class="axis" x1="'+c+'" y1="'+c+'" x2="'+q[0]+'" y2="'+q[1]+'"/>';lb+='<text x="'+t[0]+'" y="'+t[1]+'" text-anchor="middle" dominant-baseline="middle">'+dims[i]+'</text>'}const pts=s.map((v,i)=>p(i,r*v/100));return '<svg class="radar" width="340" height="340" viewBox="0 0 340 340">'+g+ax+'<polygon class="shape" points="'+pts.map(v=>v.join(",")).join(" ")+'"/>'+pts.map(v=>'<circle class="dot" cx="'+v[0]+'" cy="'+v[1]+'" r="3"/>').join("")+lb+'</svg>'}
 let share="";
-function render(s){const rank=Object.entries(A).map(([n,v])=>[n,sim(s,v)]).sort((a,b)=>b[1]-a[1]),sorted=s.map((v,i)=>[dims[i],v]).sort((a,b)=>b[1]-a[1]),low=[...sorted].sort((a,b)=>a[1]-b[1])[0];radarEl.innerHTML=radar(s);dimBars.innerHTML='<h3>十项特征得分</h3>'+dims.map((d,i)=>'<div class="dim"><div class="dimhead"><span>'+d+' · '+meaning[d]+'</span><b>'+s[i]+'%</b></div><div class="bar"><i style="width:'+s[i]+'%"></i></div></div>').join("");ranking.innerHTML=rank.slice(0,5).map((r,i)=>'<div class="rankitem"><div class="ranktop"><span class="rankname">'+(i+1)+'. '+r[0]+'</span><span class="score">'+r[1]+'%</span></div><div class="muted">'+blurbs[r[0]]+'</div></div>').join("");kpis.innerHTML='<div class="kpi"><span>最突出特征</span><b>'+sorted[0][0]+'</b><span>'+sorted[0][1]+'%</span></div><div class="kpi"><span>首要原型</span><b>'+rank[0][0]+'</b><span>匹配 '+rank[0][1]+'%</span></div><div class="kpi"><span>相对较弱特征</span><b>'+low[0]+'</b><span>'+low[1]+'%</span></div>';interpret.innerHTML='<p>你的前三项高分特征是 <b>'+sorted[0][0]+'</b>、<b>'+sorted[1][0]+'</b> 和 <b>'+sorted[2][0]+'</b>。这些特征分别指向'+meaning[sorted[0][0]]+'、'+meaning[sorted[1][0]]+'与'+meaning[sorted[2][0]]+'。</p><p>你最接近 <b>'+rank[0][0]+'</b>，其次是 <b>'+rank[1][0]+'</b>。'+blurbs[rank[0][0]]+'</p>';share="我的22星族×三魂七魄象征原型测试\n"+dims.map((d,i)=>d+" "+s[i]+"%").join("｜")+"\nTop 5："+rank.slice(0,5).map((r,i)=>(i+1)+"."+r[0]+" "+r[1]+"%").join("；")+"\n（仅作象征性人格/神话兴趣，不是外星DNA或医学检测）";quizCard.hidden=true;result.hidden=false;scrollTo({top:0,behavior:"smooth"})}
+
+function band(v){
+  if(v>=80)return "非常突出";
+  if(v>=65)return "较突出";
+  if(v>=45)return "中等";
+  if(v>=30)return "偏弱";
+  return "较弱";
+}
+function avg(arr){return Math.round(arr.reduce((a,b)=>a+b,0)/arr.length)}
+function byScore(items){return [...items].sort((a,b)=>b[1]-a[1])}
+function soulAnalysis(s){
+  const souls=[["胎光",s[0]],["爽灵",s[1]],["幽精",s[2]]];
+  const sorted=byScore(souls), gap=sorted[0][1]-sorted[2][1];
+  const desc={
+    胎光:"你更容易从意义、方向、整体感和价值感出发理解自己。",
+    爽灵:"你更容易通过分析、计划、知识、策略和结构来处理事情。",
+    幽精:"你更重视真实感受、身体经验、欲望、关系与情感流动。"
+  };
+  let balance=gap<=15
+    ?"三魂之间相对均衡，说明你在意义、理性与感受之间切换较自然。"
+    :gap<=30
+    ?"三魂存在一定主次，但仍有互相补偿的空间。"
+    :"三魂差异较明显，强项会很鲜明，同时也更容易出现“知道、想要、实际感受”彼此不同步的情况。";
+  return "<h3>三魂结构</h3><p><b>"+sorted[0][0]+"</b> 是目前最突出的三魂特征（"+sorted[0][1]+"%），"+desc[sorted[0][0]]+"</p><p>"+balance+" 当前排序为：<b>"+sorted.map(x=>x[0]+" "+x[1]+"%").join(" → ")+"</b>。</p>";
+}
+function poAnalysis(s){
+  const po=dims.slice(3).map((d,i)=>[d,s[i+3]]);
+  const sorted=byScore(po), hi=sorted.slice(0,3), low=sorted[sorted.length-1];
+  return "<h3>七魄结构</h3><p>七魄中最突出的三项是 <b>"+hi.map(x=>x[0]+" "+x[1]+"%").join("、")+"</b>。这表示你的本能系统更常通过"+hi.map(x=>meaning[x[0]]).join("、")+"来回应外界。</p><p>相对较弱的是 <b>"+low[0]+" "+low[1]+"%</b>（"+meaning[low[0]]+"）。这里的“较弱”不是缺陷，而是说明它目前不像其他特征那样经常主导你的反应。</p>";
+}
+function comboAnalysis(s){
+  const combos=[];
+  if(s[0]>=65&&s[1]>=65) combos.push("胎光＋爽灵较强：你容易把理想、意义感转化成结构、方案和行动逻辑。");
+  if(s[0]>=65&&s[2]>=65) combos.push("胎光＋幽精较强：价值感与情感体验连接紧密，通常更看重“内在真实”而不是纯粹效率。");
+  if(s[1]>=65&&s[2]>=65) combos.push("爽灵＋幽精较强：你既会分析，也会依据真实感受修正判断，适合把抽象想法落到生活经验。");
+  if(s[3]>=65&&s[4]>=65) combos.push("尸狗＋伏矢较强：对风险和边界反应快，保护意识与行动能力会比较明显。");
+  if(s[5]>=65&&s[9]>=65) combos.push("雀阴＋臭肺较强：亲密、审美、感官与环境感受容易互相放大，关系体验通常很深。");
+  if(s[6]>=65&&s[7]>=65) combos.push("吞贼＋非毒较强：你对信息、关系和环境的筛选意识较强，不容易完全照单全收。");
+  if(s[8]>=65) combos.push("除秽较强：当某件事确认失去意义后，你具有重新整理、结束旧阶段并重启的倾向。");
+  if(!combos.length) combos.push("目前没有单一组合压倒其他特征，整体更像多种倾向共同参与，而不是由某一种模式长期主导。");
+  return "<h3>组合优势</h3><ul>"+combos.slice(0,5).map(x=>"<li>"+x+"</li>").join("")+"</ul>";
+}
+function tensionAnalysis(s){
+  const t=[];
+  if(Math.abs(s[0]-s[2])>=30) t.push(s[0]>s[2]?"胎光明显高于幽精：你可能先追求意义与理想，再照顾身体和情感需要；有时会出现“精神上认同，但身体并不愿意”的情况。":"幽精明显高于胎光：真实感受和关系体验可能比宏大意义更能推动你；需要时可反过来问自己长期方向是什么。");
+  if(Math.abs(s[1]-s[2])>=30) t.push(s[1]>s[2]?"爽灵明显高于幽精：理性和分析容易压过感受，压力大时可能更倾向于解释情绪，而不是直接体验它。":"幽精明显高于爽灵：感受很强时可能先行动后分析，适合给自己一点结构化整理的空间。");
+  if(s[3]>=70&&s[5]>=70) t.push("尸狗与雀阴都高：一方面渴望连接，另一方面又很在意安全，这种“想靠近又想确认安全”的拉扯可能在关系中较明显。");
+  if(s[4]>=70&&s[9]>=70) t.push("伏矢与臭肺都高：行动反应快，同时又高度敏感，环境刺激过强时容易从感受到行动之间跳得很快。");
+  if(s[6]>=75&&s[5]<=40) t.push("吞贼高而雀阴偏低：保护边界可能比建立亲密更优先，你通常需要更高的信任门槛。");
+  if(!t.length) t.push("目前没有特别强的两极拉扯，说明这些特征之间的差距相对可控。");
+  return "<h3>可能的内在拉扯</h3><ul>"+t.slice(0,4).map(x=>"<li>"+x+"</li>").join("")+"</ul>";
+}
+function archetypeAnalysis(rank){
+  const a=rank[0],b=rank[1],c=rank[2];
+  return "<h3>星族原型混合解读</h3><p><b>第一原型："+a[0]+"（"+a[1]+"%）</b>。"+blurbs[a[0]]+"</p><p><b>第二原型："+b[0]+"（"+b[1]+"%）</b>。它更像是你的辅助模式：当第一原型不足以应对环境时，这一套特征可能更容易被调用。"+blurbs[b[0]]+"</p><p><b>第三原型："+c[0]+"（"+c[1]+"%）</b>。它可以理解为较次级但仍明显的色彩。"+blurbs[c[0]]+"</p><p>因此结果不建议理解成“你属于某一个星族”，而更适合看成 <b>"+a[0]+" × "+b[0]+" × "+c[0]+"</b> 的象征性组合。</p>";
+}
+function suggestions(s){
+  const sorted=byScore(s.map((v,i)=>[dims[i],v]));
+  const hi=sorted[0][0], low=sorted[sorted.length-1][0], tips=[];
+  tips.push("利用 <b>"+hi+"</b> 的优势时，也观察它是否在压力下走向过度，例如从优势变成僵化、控制、回避或过度敏感。");
+  tips.push("把 <b>"+low+"</b> 当作补充练习方向，而不是“需要修复的问题”。可以在日常小事中刻意给这一特征一点表达空间。");
+  if(s[3]>=70) tips.push("警觉性较高时，先区分“现实中的具体风险”与“身体自动进入警戒”这两种状态。");
+  if(s[4]>=70) tips.push("行动/防御很强时，可以在回应冲突前多加入一步：我现在是在保护边界，还是只是在快速反击？");
+  if(s[5]>=70) tips.push("关系连接较强时，注意亲密与边界同时存在：能共情不等于必须承担对方的全部情绪。");
+  if(s[7]>=70) tips.push("辨别力较强时，也保留修正判断的空间，避免把“快速看出问题”变成过早定论。");
+  if(s[8]>=70) tips.push("更新能力强时，在结束旧阶段前确认：这是成熟的放下，还是为了摆脱暂时的不适。");
+  return "<h3>自我观察建议</h3><ul>"+tips.slice(0,5).map(x=>"<li>"+x+"</li>").join("")+"</ul>";
+}
+function overall(s){
+  const sorted=byScore(s.map((v,i)=>[dims[i],v])), mean=avg(s), spread=sorted[0][1]-sorted[sorted.length-1][1];
+  let shape=spread<=20?"整体比较均衡":spread<=40?"有明显主次":"轮廓非常鲜明";
+  return "<h3>总体轮廓</h3><p>你的十项特征平均值约为 <b>"+mean+"%</b>，最高与最低相差 <b>"+spread+"</b> 分，整体属于“<b>"+shape+"</b>”的结构。最突出的三项是 <b>"+sorted.slice(0,3).map(x=>x[0]+" "+x[1]+"%").join("、")+"</b>；相对较弱的两项是 <b>"+sorted.slice(-2).reverse().map(x=>x[0]+" "+x[1]+"%").join("、")+"</b>。</p>";
+}
+
+function render(s){
+  const rank=Object.entries(A).map(([n,v])=>[n,sim(s,v)]).sort((a,b)=>b[1]-a[1]),
+        sorted=s.map((v,i)=>[dims[i],v]).sort((a,b)=>b[1]-a[1]),
+        low=[...sorted].sort((a,b)=>a[1]-b[1])[0];
+  radarEl.innerHTML=radar(s);
+  dimBars.innerHTML='<h3>十项特征得分</h3>'+dims.map((d,i)=>'<div class="dim"><div class="dimhead"><span>'+d+' · '+meaning[d]+'</span><b>'+s[i]+'% · '+band(s[i])+'</b></div><div class="bar"><i style="width:'+s[i]+'%"></i></div></div>').join("");
+  ranking.innerHTML=rank.slice(0,5).map((r,i)=>'<div class="rankitem"><div class="ranktop"><span class="rankname">'+(i+1)+'. '+r[0]+'</span><span class="score">'+r[1]+'%</span></div><div class="muted">'+blurbs[r[0]]+'</div></div>').join("");
+  kpis.innerHTML='<div class="kpi"><span>最突出特征</span><b>'+sorted[0][0]+'</b><span>'+sorted[0][1]+'% · '+band(sorted[0][1])+'</span></div><div class="kpi"><span>首要原型</span><b>'+rank[0][0]+'</b><span>匹配 '+rank[0][1]+'%</span></div><div class="kpi"><span>相对较弱特征</span><b>'+low[0]+'</b><span>'+low[1]+'% · '+band(low[1])+'</span></div>';
+  interpret.innerHTML=
+    '<div class="analysisBlock">'+overall(s)+'</div>'+
+    '<div class="analysisBlock">'+soulAnalysis(s)+'</div>'+
+    '<div class="analysisBlock">'+poAnalysis(s)+'</div>'+
+    '<div class="analysisBlock">'+comboAnalysis(s)+'</div>'+
+    '<div class="analysisBlock">'+tensionAnalysis(s)+'</div>'+
+    '<div class="analysisBlock">'+archetypeAnalysis(rank)+'</div>'+
+    '<div class="analysisBlock">'+suggestions(s)+'</div>'+
+    '<p class="muted">以上内容是基于本测试内部评分规则生成的象征性人格解读，不是对真实外星DNA、血统、疾病或心理状态的判断。</p>';
+  share="我的22星族×三魂七魄象征原型测试\n"+dims.map((d,i)=>d+" "+s[i]+"%").join("｜")+"\nTop 5："+rank.slice(0,5).map((r,i)=>(i+1)+"."+r[0]+" "+r[1]+"%").join("；")+"\n最突出特征："+sorted.slice(0,3).map(x=>x[0]).join("、")+"\n（仅作象征性人格/神话兴趣，不是外星DNA或医学检测）";
+  quizCard.hidden=true;result.hidden=false;scrollTo({top:0,behavior:"smooth"});
+}
 const radarEl=document.getElementById("radar");
 submitBtn.onclick=()=>{const s=scores();if(!s){error.style.display="block";error.scrollIntoView({behavior:"smooth",block:"center"});return}error.style.display="none";render(s)};
 function clearAll(){document.querySelectorAll('input[type="radio"]').forEach(x=>x.checked=false);try{localStorage.removeItem(STORAGE)}catch(e){}progress();error.style.display="none";result.hidden=true;quizCard.hidden=false}
